@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Database\Mysql;
 use App\Entity\Console;
 use App\Entity\Game;
+use PDO;
 
 class GameRepository
 {
@@ -25,7 +26,16 @@ class GameRepository
      * @return void
      * @throws \Exception Erreurs SQL
      */
-    public function saveGame(Game $game): void {}
+    public function saveGame(Game $game): void 
+    {
+        $sql = "INSERT INTO video_game (title, `type`, publish_at, id_console) VALUES (?,?,?,?)";
+        $stmt = $this->connect->prepare($sql);
+        $stmt->bindValue(1, $game->getTitle(), \PDO::PARAM_STR);
+        $stmt->bindValue(2, $game->getType(), \PDO::PARAM_STR);
+        $stmt->bindValue(3, $game->getPublishAt()->format('Y-m-d'), \PDO::PARAM_STR);
+        $stmt->bindValue(4, $game->getConsole()->getId(), \PDO::PARAM_INT);
+        $stmt->execute();
+    }
     
     /**
      * Méthode qui retourne la liste des jeux (Game)
@@ -34,6 +44,17 @@ class GameRepository
      */
     public function findAllGames(): array 
     {
-        return [];
+         $games = [];
+    try {
+        $sql = "SELECT g.title, g.`type`, g.publish_at, c.`name`
+                FROM video_game AS g
+                INNER JOIN console AS c ON g.id_console = c.id";
+        $stmt = $this->connect->prepare($sql);
+        $stmt->execute();
+        $games = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        echo "Erreur : " . $e->getMessage();
+    }
+    return $games;
     }
 }

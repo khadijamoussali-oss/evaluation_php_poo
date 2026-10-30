@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Database\Mysql;
 use App\Entity\Console;
+use PDO;
 
 class ConsoleRepository
 {
@@ -25,6 +26,10 @@ class ConsoleRepository
      */
     public function findAllConsoles(): array 
     {
-        return [];
+        $sql = "SELECT id, `name`, manufacturer FROM console";
+        $statement = $this->connect->prepare($sql);
+        $statement->execute();
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
